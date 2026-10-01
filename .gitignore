@@ -1,0 +1,16 @@
+# Ignore PHREEQC output files
+*.out
+*.sel
+*.tsv
+*.csv
+*.dat
+
+# Exceptions: Keep database files if you explicitly want to track custom databases
+# (Uncomment the line below if you ever add a custom database you DO want tracked)
+# !custom_database.dat
+
+# Ignore general temporary and backup files
+*~
+*.tmp
+*.log
+.DS_Store

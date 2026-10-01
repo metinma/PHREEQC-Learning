@@ -1,0 +1,16 @@
+TITLE Define a Simple Groundwater Sample
+
+SOLUTION 1 Groundwater Example
+    units   mg/L
+    temp    25.0    # Temperature in celsius
+    pH      7.5
+    pe      4.0     # Redox potential
+
+    # Elemental concentrations
+    Ca      80.0
+    Mg      20.0
+    Na      45.0
+    Cl      90.0
+    C(4)    200.0 as HCO3   # Carbonate species reported as bicarbonate
+
+END
