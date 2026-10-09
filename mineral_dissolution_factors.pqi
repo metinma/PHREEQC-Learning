@@ -1,0 +1,144 @@
+TITLE Mineral Dissolution Kinetics: pH, Temperature, and Organic Dependence
+
+# DEFINE RATE LAW FOR FORSTERITE DISSOLUTION
+
+RATES
+Forsterite
+-start
+10 REM --- Surface Area & Water Volume Scaling ---
+20 A_V = PARM(1)                # Specific reactive surface area (m2 / L solution)
+30 m0 = M0                      # Initial moles of mineral
+40 m = M                        # Current moles of mineral
+50 if (m <= 0) then goto 200    # Exit if mineral is depleted
+
+60 REM --- pH Mechanism (Acid-Promoted Attack) ---
+70 k_H = 10^(-8.8)              # Acid rate constant at 25 C (mol/m2/s)
+80 n_H = 0.8                    # Reaction order with respect to H+ activity
+90 rate_acid = k_H * (ACT("H+"))^n_H
+
+100 REM --- Neutral Mechanism ---
+110 k_nu = 10^(-10.6)           # Neutral rate constant at 25 C (mol/m2/s)
+
+120 --- Organic Content Mechanism ---
+130 k_org = 10^(-9.0)           # Organic rate constant (mol/m2/s)
+140 org_conc = TOT("C(4)")      # Organic ligand concentration proxy (mol/L)
+150 rate_org = k_org * (org_conc)^0.5
+
+160 REM --- Temperature Dependence (Arrhenius Equation) ---
+170 Ea = 60000.0                # Activation energy: 60 Kj/mol (Lasage, 1984)
+180 R = 8.314                   # Gas constant (J/mol/K)
+190 temp_factor = EXP((-Ea / R) * ((1.0 / TK) - (1.0 / 298.15)))
+
+200 REM --- Total Forward Rate & Saturation Dependency ---
+210 rate_total = A_V * (m/m0)^0.67 * (rate_acid + k_nu + rate_org) * temp_factor
+220 SR_forsterite = SR("Forsterite")
+230 net_rate = rate_total * (1.0 - SR_forsterite)
+
+240 REM --- Save moles dissolved for the time step ---
+250 moles = net_rate * TIME
+260 SAVE moles
+-end
+
+# SIMULATION 1: EFFECT OF PH ON MINERAL DISSOLUTION KINETICS
+
+SOLUTION 1 Acidic Water (pH 3.0)
+    temp        25.0
+    pH          3.0
+    pe          4.0
+    units       mmol/L
+    Mg          0.0
+    Si          0.0
+
+KINETICS 1
+Forsterite
+    -formula    Mg2SiO4     1.0
+    -m0         1.0                 # Initial mol
+    -parms      100.0               # Reactive surface area (m2/L)
+    -steps      86400 in 10 steps   # Simulation time
+    -step_divide 1e-4
+
+USER_GRAPH 1 Dissolution vs pH
+    -chart_title "Effect of pH on Mineral Dissolution Rate"
+    -axis_titles "Time (Hours)" "Dissolved Si (mmol/L)"
+    -start
+    10 GRAPH_X TOTAL_TIME / 36000.0
+    20 GRAPH_Y TOT("Si") * 1000.0
+    -end
+END
+
+SOLUTION 2 Neutral Water (pH 7.0)
+    temp        25.0
+    pH          7.0
+    pe          4.0
+    units       mmol/L
+    Mg          0.0
+    Si          0.0
+
+USE kinetics 1
+USE solution 2
+END
+
+# SIMULATION 2: EFFECT OF TEMPERATURE (ARRHENIUS ACCELERATION)
+
+SOLUTION 3 Ambient Reservoir Temperature (25 C)
+    temp        25.0
+    pH          6.0
+    units       mmol/L
+
+SOLUTION 4 Deep Geothermal/Storage Temperature (60 C)
+    temp        60.0
+    pH          6.0
+    units       mmol/L
+
+KINETICS 2
+Forsterite
+    -formula    Mg2SiO4     1.0
+    -m0         1.0                 # Initial mol
+    -parms      100.0               # Reactive surface area (m2/L)
+    -steps      86400 in 10 steps   # Simulation time
+
+USER_GRAPH 2 Temperature Effect (Arrhenius)
+    -chart_title "Arrhenius Acceleration: 25 C vs 60 C"
+    -axis_titles "Time (Hours)" "Dissolved Si (mmol/L)"
+    -start
+    10 GRAPH_X TOTAL_TIME / 36000.0
+    20 GRAPH_Y TOT("Si") * 1000.0
+    -end
+
+USE solution 3
+USE kinetics 2
+END
+
+USE solution 4
+USE kinetics 2
+END
+
+# SIMULATION 3: EFFECT OF ORGANIC CONTENT (LIGAND-PROMOTED DISSOLUTION)
+
+SOLUTION 5 Inorganic Solution (No Organics)
+    temp        25.0
+    pH          5.0
+    C(4)        0.0
+    units       mmol/L
+
+SOLUTION 6 Organic-Rich Solution (10 mM Organic Ligand Proxy)
+    temp        25.0
+    pH          5.0
+    C(4)        10.0
+    units       mmol/L
+
+USER_GRAPH 3 Organic Content Effect
+    -chart_title "Ligand-Promoted Dissolution via Organics"
+    -axis_titles "Time (Hours)" "Dissolved Si (mmol/L)"
+    -start
+    10 GRAPH_X TOTAL_TIME / 36000.0
+    20 GRAPH_Y TOT("Si") * 1000.0
+    -end
+
+USE solution 5
+USE kinetics 1
+END
+
+USE solution 6
+USE kinetics 1
+END

@@ -1,0 +1,33 @@
+TITLE Equilibration with Pure Phases of Gypsum and Anhydrite
+
+SOLUTION 1 Aqueous species of the fluid
+    units mol/kgw
+    Na 0.03
+    K 0.01
+    Ca 1e-5
+    Mg 1e-7
+    Cl 0.025
+    Fe 1e-7
+    pH 7
+    temp 25.0 # Celcius
+
+EQUILIBRIUM_PHASES 1 Equilibrium calculation (steady-state)
+    Gypsum      0.0 1.0     # Saturation Index; Amount in mol
+    Anhydrite   0.0 1.0     # Saturation Index; Amount in mol
+
+REACTION_TEMPERATURE 1 Reaction temperature you can control
+    25.0 75.0 in 51 steps
+
+USER_GRAPH 1
+    -headings       Temperature Gypsum Anhydrite
+    -chart_title    "Gypsum-Anhydrite Stability"
+    -axis_scale     x_axis  25 75 5 0
+    -axis_scale     y_axis  auto 0.05 0.1
+    -axis_titles    "Temperature, degC" "Saturation Index"
+    -initial_solutions false
+    -start
+    10 graph_x TC
+    20 graph_y SI("Gypsum") SI("Anhydrite")
+    -end
+
+END

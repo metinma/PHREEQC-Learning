@@ -1,0 +1,48 @@
+DATABASE /home/metinma/phreeqc3/database/llnl.dat
+
+TITLE Silica Solubility
+
+SOLUTION 1 Aqueous species in the fluid
+    units mol/kgw
+    Na 0.048
+    K 3e-3
+    Ca 2e-4
+    Mg 3e-5
+    Cl 2.8e-3
+    Si 5e-3
+    Alkalinity 0.0383 as HCO3 # Alkalinity is an indicator for pH
+    temp 25.0 # Celcius
+
+EQUILIBRIUM_PHASES 1 Equilibrium calculation (steady-state)
+    Quartz              0.0 1.0
+    Chalcedony          0.0 1.0
+    Cristobalite(alpha) 0.0 1.0
+
+REACTION_TEMPERATURE 1 Reaction temperature
+    25 300 in 150 steps
+
+USER_GRAPH 1 Saturation indics of the minerals
+    -chart_title "Saturation Indices of Quartz Chalcedony and Cristobalite"
+    -axis_scale x_axis 25 300 5 0
+    -headings Temperature Quartz Chalcedony Cristobalite(alpha)
+    -axis_scale y_axis auto 0.05 0.1
+    -axis_titles "Temperature, in dgrees celcius" "saturation index"
+    -initial_solutions false
+    -start # loop for temperature increment
+    10 graph_x TC # temperature in celcius degree
+    20 graph_y SI("Quartz") SI("Chalcedony") SI("Cristobalite(alpha)") # saturation index of minerals "SI" mineral indicator "Quartz"
+    -end
+
+USER_GRAPH 2 Amount of aqueous silica in the solution
+    -headings Temperature SiO2(aq)
+    -chart_title "Silica Solubility"
+    -axis_scale x_axis 25 300 5 0
+    -axis_scale y_axis  1e-3 0.02
+    -axis_titles "Temperature, in dgrees celcius" "mol/kgw"
+    -initial_solutions false
+    -start     # loop for temperature increment
+    10 graph_x TC # temperature in celcius degree
+    20 graph_y tot("Si") # amount of aqueous Silica in the solution (mol/kgw) over temperature
+    -end
+
+END
